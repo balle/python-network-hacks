@@ -1,0 +1,4 @@
+217.79.220.184 *
+80.237.132.86 www.datenliebhaber.de
+192.168.23.42 www.ccc.de
+

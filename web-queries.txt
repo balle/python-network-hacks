@@ -1,0 +1,7 @@
+backup
+log
+old
+admin
+devel
+doc
+documentation
