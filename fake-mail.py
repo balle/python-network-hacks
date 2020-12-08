@@ -1,32 +1,30 @@
 
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import socket
 
-HOST = 'localhost'
+HOST = 'mx1.codekid.net'
 PORT = 25
-MAIL_TO = "someone@on_the_inter.net"
+MAIL_TO = "<someone@on_the_inter.net>"
 
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.setblocking(0)
 sock.connect((HOST, PORT))
 
-sock.send('HELO du.da')
-sock.send('MAIL FROM: weihnachtsmann@nordpol.net')
-print repr(sock.recv(1024))
+sock.send('HELO du.da'.encode())
+sock.send('MAIL FROM: <santaclaus@northpole.net>'.encode())
+print(sock.recv(1024).decode())
 
-sock.send('RCPT TO: ' + MAIL_TO)
-print repr(sock.recv(1024))
+sock.send('RCPT TO: '.encode() + MAIL_TO.encode())
+print(sock.recv(1024).decode())
 
-sock.send('DATA')
-sock.send('Subject: Dein Wunschzettel')
-sock.send('Selbstverstaendlich bekommst Du Dein Pony!')
-sock.send('Mfg der Weihnachtsmann')
-sock.send('.')
-print repr(sock.recv(1024))
+sock.send('DATA'.encode())
+sock.send('Subject: Your wishlist'.encode())
+sock.send('Of course you get your pony!'.encode())
+sock.send('Best regards Santa'.encode())
+sock.send('.'.encode())
+print(sock.recv(1024).decode())
 
-sock.send('QUIT')
-print repr(sock.recv(1024))
+sock.send('QUIT'.encode())
+print(sock.recv(1024).decode())
 
 sock.close()
-

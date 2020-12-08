@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import os
@@ -19,15 +19,15 @@ def get_ips(start_ip, stop_ip):
     tmp = []
 
     for i in start_ip.split('.'):
-        tmp.append("%02X" % long(i))
+        tmp.append("%02X" % int(i))
 
-    start_dec = long(''.join(tmp), 16)
+    start_dec = int(''.join(tmp), 16)
     tmp = []
 
     for i in stop_ip.split('.'):
-        tmp.append("%02X" % long(i))
+        tmp.append("%02X" % int(i))
 
-    stop_dec = long(''.join(tmp), 16)
+    stop_dec = int(''.join(tmp), 16)
 
     while(start_dec < stop_dec + 1):
         bytes = []
@@ -53,12 +53,13 @@ def proxy_scan(ip):
             s = socket.socket(socket.AF_INET,
                               socket.SOCK_STREAM)
             s.connect((ip, port))
-            print ip + ":" + str(port) + " OPEN"
+            print(ip + ":" + str(port) + " OPEN")
 
             # try to fetch the url
-            print "GET " + get_host + " HTTP/1.0\n"
-            s.send("GET " + get_host + " HTTP/1.0\r\n")
-            s.send("\r\n")
+            req = "GET " + get_host + " HTTP/1.0\r\n"
+            print(req)
+            s.send(req.encode())
+            s.send("\r\n".encode())
 
             # get and print response
             while 1:
@@ -67,15 +68,15 @@ def proxy_scan(ip):
                 if not data:
                     break
 
-                print data
+                print(data)
 
             s.close()
         except socket.error:
-            print ip + ":" + str(port) + " Connection refused"
+            print(ip + ":" + str(port) + " Connection refused")
 
 # parsing parameter
 if len(sys.argv) < 2:
-    print sys.argv[0] + ": <start_ip-stop_ip>"
+    print(sys.argv[0] + ": <start_ip-stop_ip>")
     sys.exit(1)
 else:
     if len(sys.argv) == 3:

@@ -1,10 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
-import lightblue
+import bluetooth as bt
 from signal import signal, SIGALRM, alarm
 import sys
 
-channel_status = 0
 got_timeout = False
 timeout = 2
 
@@ -17,27 +16,28 @@ def sig_alrm_handler(signum, frame):
 signal(SIGALRM, sig_alrm_handler)
 
 if len(sys.argv) < 2:
-    print "Usage: " + sys.argv[0] + " <addr>"
+    print("Usage: " + sys.argv[0] + " <addr>")
     sys.exit(0)
-
+    
 for channel in range(1, 31):
-    sock = lightblue.socket()
+    sock = bt.BluetoothSocket(bt.RFCOMM)
+    
     got_timeout = False
-    channel_status = 0
+    channel_open = False
 
     try:
         alarm(timeout)
         sock.connect((sys.argv[1], channel))
         alarm(0)
         sock.close()
-        channel_status = 1
-    except IOError:
+        channel_open = True
+    except bt.btcommon.BluetoothError:
         pass
 
-    if got_timeout == True:
-        print "Channel " + str(channel) + " filtered"
+    if got_timeout:
+        print("Channel " + str(channel) + " filtered")
         got_timeout = False
-    elif channel_status == 0:
-        print "Channel " + str(channel) + " closed"
-    elif channel_status == 1:
-        print "Channel " + str(channel) + " open"
+    elif channel_open:
+        print("Channel " + str(channel) + " open")
+    else:
+        print("Channel " + str(channel) + " closed")

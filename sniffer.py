@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import getopt
@@ -6,18 +6,18 @@ import pcapy
 from impacket.ImpactDecoder import EthDecoder
 
 
-dev = "eth0"
+dev = "enp3s0f1"
 filter = "arp"
 decoder = EthDecoder()
 
 # This function will be called for every packet
 # and just print it
 def handle_packet(hdr, data):
-    print decoder.decode(data)
+    print(decoder.decode(data))
 
 
 def usage():
-    print sys.argv[0] + " -i <dev> -f <pcap_filter>"
+    print(sys.argv[0] + " -i <dev> -f <pcap_filter>")
     sys.exit(1)
 
 # Parsing parameter

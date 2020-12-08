@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 ###[ Loading modules
 
 import sys
-import httplib2
-from urlparse import urlparse
-from BeautifulSoup import BeautifulSoup
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 
 ###[ Global vars

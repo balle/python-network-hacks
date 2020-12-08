@@ -1,6 +1,7 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
-import lightblue
+import bluetooth as bt
 
-for device in lightblue.finddevices():
-    print device[0] + " " + device[1]
+for (addr, name) in bt.discover_devices(lookup_names=True):
+    print("%s %s" % (addr, name))
+

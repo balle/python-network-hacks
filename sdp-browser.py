@@ -1,18 +1,18 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
-import bluetooth
+import bluetooth as bt
 import sys
 
 if len(sys.argv) < 2:
-    print "Usage: " + sys.argv[0] + " <addr>"
+    print("Usage: " + sys.argv[0] + " <addr>")
     sys.exit(0)
 
-services = bluetooth.find_service(address=sys.argv[1])
+services = bt.find_service(address=sys.argv[1])
 
 if(len(services) < 1):
-    print "No services found"
+    print("No services found")
 else:
     for service in services:
         for (key, value) in service.items():
-            print key + ": " + str(value)
-        print ""
+            print(key + ": " + str(value))
+        print("")

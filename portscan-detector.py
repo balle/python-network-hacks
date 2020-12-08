@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 from time import time
@@ -32,15 +32,15 @@ def detect_portscan(packet):
 
         # Still too much scanned ports?
         if len(ip_to_ports[ip.src]) >= nr_of_diff_ports:
-            print "Portscan detected from " + ip.src
-            print "Scanned ports " + \
+            print("Portscan detected from " + ip.src)
+            print("Scanned ports " + \
                   ",".join(ip_to_ports[ip.src].keys()) + \
-                  "\n"
+                  "\n")
 
             del ip_to_ports[ip.src]
 
 if len(sys.argv) < 2:
-    print sys.argv[0] + " <iface>"
+    print(sys.argv[0] + " <iface>")
     sys.exit(0)
 
 sniff(prn=detect_portscan,

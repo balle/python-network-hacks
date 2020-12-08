@@ -1,14 +1,16 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from scapy.all import *
 
-iface = "mon0"
+iface = "wlp2s0"
+iwconfig_cmd = "/usr/sbin/iwconfig"
+
 wpa_handshake = []
 
 def handle_packet(packet):
     # Got EAPOL KEY packet
     if packet.haslayer(EAPOL) and packet.type == 2:
-        print packet.summary()
+        print(packet.summary())
         wpa_handshake.append(packet)
 
         # Got complete handshake? Dump it to pcap file
@@ -17,8 +19,8 @@ def handle_packet(packet):
 
 
 # Set device into monitor mode
-os.system("iwconfig " + iface + " mode monitor")
+os.system(iwconfig_cmd + " " + iface + " mode monitor")
 
 # Start sniffing
-print "Sniffing on interface " + iface
+print("Sniffing on interface " + iface)
 sniff(iface=iface, prn=handle_packet)

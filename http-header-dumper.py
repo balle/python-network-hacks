@@ -1,14 +1,13 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
-import httplib2
+import requests
 
 if len(sys.argv) < 2:
-    print sys.argv[0] + ": <url>"
+    print(sys.argv[0] + ": <url>")
     sys.exit(1)
 
-webclient = httplib2.Http()
-header, content = webclient.request(sys.argv[1], "GET")
+r = requests.get(sys.argv[1])
 
-for field, value in header.items():
-    print field + ": " + value
+for field, value in r.headers.items():
+    print(field + ": " + value)

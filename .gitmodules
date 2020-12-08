@@ -1,0 +1,3 @@
+[submodule "krackattacks-scripts"]
+	path = krackattack
+	url = https://github.com/vanhoefm/krackattacks-scripts

@@ -1,9 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import time
 from scapy.all import sendp, ARP, Ether, Dot1Q
 
-iface = "eth0"
+iface = "enp3s0f1"
 target_ip = '192.168.13.23'
 fake_ip = '192.168.13.5'
 fake_mac = 'c0:d3:de:ad:be:ef'

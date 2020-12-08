@@ -1,9 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import time
 from scapy.all import *
 
-iface = "wlan0"
+iface = "wlp2s0mon"
+iwconfig_cmd = "/usr/sbin/iwconfig"
 
 # Nr of max probe responses with different ssids from one addr
 max_ssids_per_addr = 5
@@ -18,27 +19,27 @@ deauths = {}
 def handle_packet(pkt):
     # Got deauth packet
     if pkt.haslayer(Dot11Deauth):
-	deauths.setdefault(pkt.addr2, []).append(time.time())
+        deauths.setdefault(pkt.addr2, []).append(time.time())
         span = deauths[pkt.addr2][-1] - deauths[pkt.addr2][0]
 
         # Detected enough deauths? Check the timespan
         if len(deauths[pkt.addr2]) == nr_of_max_deauth and \
            span <= deauth_timespan:
-            print "Detected deauth flood from: " + pkt.addr2
+            print("Detected deauth flood from: " + pkt.addr2)
             del deauths[pkt.addr2]
 
     # Got probe response
     elif pkt.haslayer(Dot11ProbeResp):
-	probe_resp.setdefault(pkt.addr2, set()).add(pkt.info)
+        probe_resp.setdefault(pkt.addr2, set()).add(pkt.info)
 
         # Detected too much ssids from one addr?
         if len(probe_resp[pkt.addr2]) == max_ssids_per_addr:
-            print "Detected ssid spoofing from " + pkt.addr2
+            print("Detected ssid spoofing from " + pkt.addr2)
 
             for ssid in probe_resp[pkt.addr2]:
-                print ssid
+                print(ssid)
 
-            print ""
+            print("")
             del probe_resp[pkt.addr2]
 
 
@@ -47,8 +48,8 @@ if len(sys.argv) > 1:
     iface = sys.argv[1]
 
 # Set device into monitor mode
-os.system("iwconfig " + iface + " mode monitor")
+os.system(iwconfig_cmd + " " + iface + " mode monitor")
 
 # Start sniffing
-print "Sniffing on interface " + iface
+print("Sniffing on interface " + iface)
 sniff(iface=iface, prn=handle_packet)

@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 ###[ Loading modules
 
 import sys
-import httplib2
-from urlparse import urlparse
-from BeautifulSoup import BeautifulSoup
+import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urlparse
 
 
 ###[ Global vars
@@ -28,7 +28,7 @@ attack_urls = []
 
 ###[ Subroutines
 
-def get_abs_url(link):
+def get_abs_url(base_url, link):
     """
     check if the link is relative and prepend the protocol
     and host. filter unwanted links like mailto and links
@@ -39,15 +39,15 @@ def get_abs_url(link):
             if link[0] != "/":
                 link = "/" + link
 
-            link = protocol + "://" + base_host + link
+            link = base_url.scheme + "://" + base_url.hostname + link
 
-        if "mailto:" in link or base_host not in link:
+        if "mailto:" in link or base_url.hostname not in link:
             return None
         else:
             return link
 
 
-def spider(url):
+def spider(base_url, url):
     """
     check if we dont know the url
     spider to url
@@ -58,30 +58,28 @@ def spider(url):
         return None
 
     if url:
-        (n_proto, n_host, n_path,
-         n_params, n_query, n_frag) = urlparse(url)
+        p_url = urlparse(url)
 
-        if not known_url.get(url) and n_host == base_host:
+        if not known_url.get(url) and p_url.hostname == base_url.hostname:
             try:
                 sys.stdout.write(".")
                 sys.stdout.flush()
 
                 known_url[url] = True
-                response, content = browser.request(url)
+                r = requests.get(url)
 
-                if response.status == 200:
+                if r.status_code == 200:
                     if "?" in url:
                         attack_urls.append(url)
 
-                    soup = BeautifulSoup(content)
+                    soup = BeautifulSoup(r.content,
+                                         features="html.parser")
 
                     for tag in soup('a'):
-                        spider(get_abs_url(tag.get('href')))
-            except httplib2.ServerNotFoundError:
-                print "Got error for " + url + \
-                      ": Server not found"
-            except httplib2.RedirectLimit:
-                pass
+                        spider(base_url, get_abs_url(base_url, tag.get('href')))
+            except requests.exceptions.ConnectionError as e:
+                print("Got error for " + url + \
+                      ": " + str(e))
 
 
 def found_error(content):
@@ -103,53 +101,51 @@ def attack(url):
     inject special chars
     try to guess if attack was successfull
     """
-    (a_proto, a_host, a_path,
-     a_params, a_query, a_frag) = urlparse(url)
+    p_url = urlparse(url)
 
-    if not a_query in already_attacked.get(a_path, []):
-        already_attacked.setdefault(a_path, []).append(a_query)
+    if not p_url.query in already_attacked.get(p_url.path, []):
+        already_attacked.setdefault(p_url.path, []).append(p_url.query)
 
         try:
             sys.stdout.write("\nAttack " + url)
             sys.stdout.flush()
-            response, content = browser.request(url)
+            r = requests.get(url)
 
-            for param_value in a_query.split("&"):
+            for param_value in p_url.query.split("&"):
                 param, value = param_value.split("=")
 
                 for inject in inject_chars:
-                    a_url = a_proto + "://" + \
-                            a_host + a_path + \
+                    a_url = p_url.scheme + "://" + \
+                            p_url.hostname + p_url.path + \
                             "?" + param + "=" + inject
                     sys.stdout.write(".")
                     sys.stdout.flush()
-                    a_res, a_content = browser.request(a_url)
+                    a = requests.get(a_url)
 
-                    if content != a_content:
-                        print "\nGot different content " + \
-                              "for " + a_url
-                        print "Checking for exception output"
+                    if r.content != a.content:
+                        print("\nGot different content " + \
+                              "for " + a_url)
+                        print("Checking for exception output")
                         if found_error(a_content):
-                            print "Attack was successful!"
-        except (httplib2.ServerNotFoundError,
-                httplib2.RedirectLimit):
+                            print("Attack was successful!")
+        except requests.exceptions.ConnectionError:
             pass
 
 
 ###[ MAIN PART
 
 if len(sys.argv) < 2:
-    print sys.argv[0] + ": <url>"
+    print(sys.argv[0] + ": <url>")
     sys.exit(1)
 
 start_url = sys.argv[1]
-(protocol, base_host,
- path, params, query, frag) = urlparse(start_url)
-browser = httplib2.Http()
+base_url = urlparse(start_url)
 
 sys.stdout.write("Spidering")
-spider(start_url)
+spider(base_url, start_url)
 sys.stdout.write(" Done.\n")
+
+
 
 for url in attack_urls:
     attack(url)

@@ -1,9 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 from scapy.all import *
 
-iface = "wlan0"
+iface = "wlp2s0"
+iwconfig_cmd = "/usr/sbin/iwconfig"
+
 nr_of_wep_packets = 40000
 packets = []
 
@@ -14,10 +16,10 @@ def handle_packet(packet):
     if packet.haslayer(Dot11WEP):
         packets.append(packet)
 
-        print "Paket " + str(len(packets)) + ": " + \
+        print("Paket " + str(len(packets)) + ": " + \
               packet[Dot11].addr2 + " IV: " + str(packet.iv) + \
               " Keyid: " + str(packet.keyid) + \
-              " ICV: " + str(packet.icv)
+              " ICV: " + str(packet.icv))
 
         # Got enough packets to crack wep key?
         # Save them to pcap file and exit
@@ -26,8 +28,8 @@ def handle_packet(packet):
             sys.exit(0)
 
 # Set device into monitor mode
-os.system("iwconfig " + iface + " mode monitor")
+os.system(iwconfig_cmd + " " + iface + " mode monitor")
 
 # Start sniffing
-print "Sniffing on interface " + iface
+print("Sniffing on interface " + iface)
 sniff(iface=iface, prn=handle_packet)

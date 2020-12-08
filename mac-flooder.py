@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 from scapy.all import *
@@ -10,10 +10,10 @@ packet = Ether(src=RandMAC("*:*:*:*:*:*"),
          ICMP()
 
 if len(sys.argv) < 2:
-    dev = "eth0"
+    dev = "enp3s0f1"
 else:
     dev = sys.argv[1]
 
-print "Flooding net with random packets on dev " + dev
+print("Flooding net with random packets on dev " + dev)
 
 sendp(packet, iface=dev, loop=1)

@@ -1,33 +1,36 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import struct
 import bluetooth._bluetooth as bt
+import codecs
 
 if len(sys.argv) < 2:
-    print sys.argv[0] + " <bdaddr>"
+    print(sys.argv[0] + " <bdaddr>")
     sys.exit(1)
 
 # Split bluetooth address into it's bytes
 baddr = sys.argv[1].split(":")
 
 # Open hci socket
-sock = bt.hci_open_dev(0)
+sock = bt.hci_open_dev(1)
 
 # CSR vendor command to change address
-cmd = [ "\xc2", "\x02", "\x00", "\x0c", "\x00", "\x11",
-        "\x47", "\x03", "\x70", "\x00", "\x00", "\x01",
-        "\x00", "\x04", "\x00", "\x00", "\x00", "\x00",
-        "\x00", "\x00", "\x00", "\x00", "\x00", "\x00",
-        "\x00" ]
+cmd = [ b"\xc2", b"\x02", b"\x00", b"\x0c", b"\x00", b"\x11",
+        b"\x47", b"\x03", b"\x70", b"\x00", b"\x00", b"\x01",
+        b"\x00", b"\x04", b"\x00", b"\x00", b"\x00", b"\x00",
+        b"\x00", b"\x00", b"\x00", b"\x00", b"\x00", b"\x00",
+        b"\x00" ]
 
 # Set new addr in hex
-cmd[17] = baddr[3].decode("hex")
-cmd[19] = baddr[5].decode("hex")
-cmd[20] = baddr[4].decode("hex")
-cmd[21] = baddr[2].decode("hex")
-cmd[23] = baddr[1].decode("hex")
-cmd[24] = baddr[0].decode("hex")
+decode_hex = codecs.getdecoder("hex_codec")
+
+cmd[17] = decode_hex(baddr[3])[0]
+cmd[19] = decode_hex(baddr[5])[0]
+cmd[20] = decode_hex(baddr[4])[0]
+cmd[21] = decode_hex(baddr[2])[0]
+cmd[23] = decode_hex(baddr[1])[0]
+cmd[24] = decode_hex(baddr[0])[0]
 
 # Send HCI request
 bt.hci_send_req(sock,
@@ -35,7 +38,7 @@ bt.hci_send_req(sock,
                 0,
                 bt.EVT_VENDOR,
                 2000,
-                "".join(cmd))
+                b"".join(cmd))
 
 sock.close()
-print "Dont forget to reset your device"
+print("Dont forget to reset your device")

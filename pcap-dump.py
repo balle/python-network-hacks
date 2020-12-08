@@ -1,19 +1,19 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import getopt
 import pcapy
 from impacket.ImpactDecoder import EthDecoder
-from impacket.ImpactPacket import IP
+from impacket.ImpactPacket import IP, TCP, UDP
 
-dev = "eth0"
+dev = "enp3s0f1"
 decoder = EthDecoder()
 input_file = None
 dump_file = "sniffer.pcap"
 
 
 def write_packet(hdr, data):
-    print decoder.decode(data)
+    print(decoder.decode(data))
     dumper.dump(hdr, data)
 
 
@@ -21,18 +21,29 @@ def read_packet(hdr, data):
     ether = decoder.decode(data)
     if ether.get_ether_type() == IP.ethertype:
         iphdr = ether.child()
-        tcphdr = iphdr.child()
-        print iphdr.get_ip_src() + ":" + \
-              str(tcphdr.get_th_sport()) + \
-               " -> " + iphdr.get_ip_dst() + ":" + \
-               str(tcphdr.get_th_dport())
+        transhdr = iphdr.child()
+
+        if iphdr.get_ip_p() == TCP.protocol:
+            print(iphdr.get_ip_src() + ":" + \
+                  str(transhdr.get_th_sport()) + \
+                   " -> " + iphdr.get_ip_dst() + ":" + \
+                   str(transhdr.get_th_dport()))
+        elif iphdr.get_ip_p() == UDP.protocol:
+            print(iphdr.get_ip_src() + ":" + \
+                  str(transhdr.get_uh_sport()) + \
+                   " -> " + iphdr.get_ip_dst() + ":" + \
+                   str(transhdr.get_uh_dport()))
+        else:
+            print(iphdr.get_ip_src() + \
+                  " -> " + iphdr.get_ip_dst() + ": " + \
+                  str(transhdr))
 
 
 def usage():
-    print sys.argv[0] + """
+    print(sys.argv[0] + """
     -i <dev>
     -r <input_file>
-    -w <output_file>"""
+    -w <output_file>""")
     sys.exit(1)
 
 

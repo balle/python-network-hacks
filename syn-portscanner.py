@@ -1,10 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 from scapy.all import sr, IP, TCP
 
 if len(sys.argv) < 2:
-    print sys.argv[0] + " <host> <spoofed_source_ip>"
+    print(sys.argv[0] + " <host> <spoofed_source_ip>")
     sys.exit(1)
 
 
@@ -57,8 +57,7 @@ for (send, recv) in answered:
 
 # Print res
 ports = res.keys()
-ports.sort()
 
-for port in ports:
+for port in sorted(ports):
     if res[port] != "closed":
-        print str(port) + ": " + res[port]
+        print(str(port) + ": " + res[port])

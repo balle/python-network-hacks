@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import getopt
@@ -15,10 +15,10 @@ new_gw = None
 
 
 def usage():
-    print sys.argv[0] + """
+    print(sys.argv[0] + """
     -t <target>
     -o <old_gw>
-    -n <new_gw>"""
+    -n <new_gw>""")
     sys.exit(1)
 
 # Parsing parameter

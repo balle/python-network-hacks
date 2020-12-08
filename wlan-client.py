@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 from scapy.all import *
 
 
-station = "d0:01:5f:1e:21:f3"
+station = "c0:de:de:ad:be:ef"
 ssid = "LoveMe"
-iface = "wlan0"
+iface = "wlp2s0"
 
 # probe request
 pkt = RadioTap() / \
@@ -13,17 +13,22 @@ pkt = RadioTap() / \
           addr2=station, addr3=station) / \
     Dot11ProbeReq() / \
     Dot11Elt(ID='SSID', info=ssid, len=len(ssid))
-print "Sending probe request"
+
+print("Sending probe request")
+
 res = srp1(pkt, iface=iface)
 bssid = res.addr2
-print "Got answer from " + bssid
+
+print("Got answer from " + bssid)
 
 # authentication with open system
 pkt = RadioTap() / \
     Dot11(subtype=0xb,
           addr1=bssid, addr2=station, addr3=bssid) / \
     Dot11Auth(algo=0, seqnum=1, status=0)
-print "Sending authentication"
+
+print("Sending authentication")
+
 res = srp1(pkt, iface=iface)
 res.summary()
 
@@ -34,6 +39,7 @@ pkt = RadioTap() / \
     Dot11Elt(ID='SSID', info=ssid) / \
     Dot11Elt(ID="Rates", info="\x82\x84\x0b\x16")
 
-print "Association request"
+print("Association request")
+
 res = srp1(pkt, iface=iface)
 res.summary()

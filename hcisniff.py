@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import struct
@@ -30,18 +30,17 @@ while True:
         ptype, event, plen = struct.unpack("BBB", header)
         packet = sock.recv(plen)
 
-        print "Ptype: " + str(ptype) + " Event: " + str(event)
-        print "Packet: "
+        print("Ptype: " + str(ptype) + " Event: " + str(event))
+        print("Packet: ")
 
         # Got ACL data connection? Try to dump it in ascii
         # otherwise dump the packet in hex
         if ptype == bt.HCI_ACLDATA_PKT:
-            print packet + "\n"
+            print(packet + "\n")
         else:
-            for c in packet:
-                hex = struct.unpack("B",c)[0]
+            for hex in packet:
                 sys.stdout.write("%02x " % hex)
-            print "\n"
+            print("\n")
 
     # Got no data
     else:

